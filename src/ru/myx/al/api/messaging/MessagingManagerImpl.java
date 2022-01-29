@@ -5,6 +5,7 @@
  */
 package ru.myx.al.api.messaging;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,9 +36,9 @@ final class MessagingManagerImpl implements MessagingManager {
 		case 0:
 			return BaseObject.UNDEFINED;
 		case 1:
-			return Xml.toBase( "messageMaterialize", data, Engine.CHARSET_UTF8, null, null, null );
+			return Xml.toBase( "messageMaterialize", data, StandardCharsets.UTF_8, null, null, null );
 		case 2:
-			return Xml.toBase( "messageMaterialize", data, Engine.CHARSET_UTF8, null, null, null );
+			return Xml.toBase( "messageMaterialize", data, StandardCharsets.UTF_8, null, null, null );
 		default:
 			throw new RuntimeException( "Unknown data type: " + type );
 		}
@@ -83,7 +84,7 @@ final class MessagingManagerImpl implements MessagingManager {
 						ps.setString( 4, factoryId );
 						ps.setInt( 5, 1 );
 						ps.setBytes( 6,
-								Xml.toXmlString( "data", factoryParameters, true ).getBytes( Engine.CHARSET_UTF8 ) );
+								Xml.toXmlString( "data", factoryParameters, true ).getBytes( StandardCharsets.UTF_8 ) );
 						ps.execute();
 					}
 				}
