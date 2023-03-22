@@ -1,6 +1,6 @@
 /*
  * Created on 09.10.2004
- * 
+ *
  * Window - Preferences - Java - Code Style - Code Templates
  */
 package ru.myx.al.api.messaging;
@@ -32,11 +32,9 @@ import ru.myx.ae3.email.EmailSender;
 import ru.myx.ae3.report.Report;
 import ru.myx.jdbc.lock.Runner;
 
-/**
- * @author myx
- * 		
- *         Window - Preferences - Java - Code Style - Code Templates
- */
+/** @author myx
+ *
+ *         Window - Preferences - Java - Code Style - Code Templates */
 final class MessagingRunner implements Runner, Runnable {
 	
 	private final static void discardQueue(final Connection conn, final int luid) throws SQLException {
@@ -65,6 +63,7 @@ final class MessagingRunner implements Runner, Runnable {
 	private boolean started = false;
 	
 	MessagingRunner(final Plugin parent) {
+
 		this.parent = parent;
 	}
 	
@@ -118,7 +117,7 @@ final class MessagingRunner implements Runner, Runnable {
 							final AccessUser<?> user = users[i];
 							if (user != null) {
 								final String email = user.getEmail();
-								if (email != null && email.trim().length() > 0) {
+								if (email != null && !email.isBlank()) {
 									ps.setString(1, "#email: " + email);
 									ps.setInt(2, info.msgLuid);
 									ps.execute();
@@ -161,7 +160,7 @@ final class MessagingRunner implements Runner, Runnable {
 					if (principal.isPerson()) {
 						final AccessUser<?> user = (AccessUser<?>) principal;
 						final String email = user.getEmail();
-						if (email != null && email.trim().length() > 0) {
+						if (email != null && !email.isBlank()) {
 							targets.add("#email: " + email);
 						} else {
 							targets.add("#local: " + user.getKey());
@@ -188,7 +187,7 @@ final class MessagingRunner implements Runner, Runnable {
 			final AccessUser<?> user = manager.getUser(userId, false);
 			if (user != null) {
 				final String email = user.getEmail();
-				if (email != null && email.trim().length() > 0) {
+				if (email != null && !email.isBlank()) {
 					try (final PreparedStatement ps = conn.prepareStatement(
 							"INSERT INTO m1Queue(msgId,msgQueued,msgExpire,msgFailCounter,msgPriority,msgInteractive,msgTarget) SELECT msgId,msgQueued,msgExpire,msgFailCounter,msgPriority,msgInteractive,? FROM m1Queue WHERE msgLuid=?")) {
 						ps.setString(1, "#email: " + email);
@@ -237,7 +236,7 @@ final class MessagingRunner implements Runner, Runnable {
 				} else {
 					final String login = user.getLogin();
 					final String email = user.getEmail();
-					if (email == null || email.trim().length() == 0) {
+					if (email == null || email.isBlank()) {
 						if (login == null || login.length() == 0) {
 							data.put("From", "uid." + info.msgOwnerId + "@" + this.parent.getServer().getDomainId());
 						} else {
