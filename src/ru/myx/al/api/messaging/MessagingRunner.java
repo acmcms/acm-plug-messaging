@@ -36,17 +36,17 @@ import ru.myx.jdbc.lock.Runner;
  *
  *         Window - Preferences - Java - Code Style - Code Templates */
 final class MessagingRunner implements Runner, Runnable {
-	
+
 	private final static void discardQueue(final Connection conn, final int luid) throws SQLException {
-		
+
 		try (final PreparedStatement ps = conn.prepareStatement("DELETE FROM m1Queue WHERE msgLuid=?")) {
 			ps.setInt(1, luid);
 			ps.execute();
 		}
 	}
-	
+
 	private final static void doSendLocal(final Connection conn, final MessageImpl info) throws SQLException {
-		
+
 		final String userId = info.msgTarget.substring("#local: ".length());
 		try (final PreparedStatement ps = conn
 				.prepareStatement("INSERT INTO m1Inbox(msgId,msgUserId,msgPriority,msgRead,msgTarget) SELECT msgId,?,msgPriority,?,msgTarget FROM m1Queue WHERE msgLuid=?")) {
@@ -57,18 +57,18 @@ final class MessagingRunner implements Runner, Runnable {
 		}
 		MessagingRunner.discardQueue(conn, info.msgLuid);
 	}
-	
-	private final Plugin parent;
-	
-	private boolean started = false;
-	
-	MessagingRunner(final Plugin parent) {
 
+	private final Plugin parent;
+
+	private boolean started = false;
+
+	MessagingRunner(final Plugin parent) {
+		
 		this.parent = parent;
 	}
-	
+
 	private final void doExtractAccess(final Connection conn, final MessageImpl info) throws SQLException {
-		
+
 		final String accessDescription = info.msgTarget.substring("#access: ".length());
 		final int accessPosition = accessDescription.indexOf(',');
 		if (accessPosition != -1) {
@@ -91,9 +91,9 @@ final class MessagingRunner implements Runner, Runnable {
 		}
 		MessagingRunner.discardQueue(conn, info.msgLuid);
 	}
-	
+
 	private final void doExtractGroup(final Connection conn, final MessageImpl info) throws SQLException {
-		
+
 		final String groupId = info.msgTarget.substring("#group: ".length());
 		final AccessManager manager = this.parent.getServer().getAccessManager();
 		final AccessGroup<?> group = manager.getGroup(groupId, false);
@@ -136,9 +136,9 @@ final class MessagingRunner implements Runner, Runnable {
 		}
 		MessagingRunner.discardQueue(conn, info.msgLuid);
 	}
-	
+
 	private final Set<String> doFillTargets(final AccessManager manager, final AccessPrincipal<?>[] principals, final Set<String> targets, final boolean interactive) {
-		
+
 		if (interactive) {
 			for (int i = principals.length - 1; i >= 0; --i) {
 				final AccessPrincipal<?> principal = principals[i];
@@ -176,9 +176,9 @@ final class MessagingRunner implements Runner, Runnable {
 		}
 		return targets;
 	}
-	
+
 	private final void doSendUser(final Connection conn, final MessageImpl info) throws SQLException {
-		
+
 		if (info.msgInteractive) {
 			MessagingRunner.doSendLocal(conn, info);
 		} else {
@@ -203,9 +203,9 @@ final class MessagingRunner implements Runner, Runnable {
 			}
 		}
 	}
-	
+
 	private final void doStartExternal(final LinkedList<?> sendExternal, final LinkedList<MessageImpl> doneExternal) {
-		
+
 		final EmailSender sender = BaseRT3.runtime().getEmailSender();
 		for (;;) {
 			final Object next;
@@ -259,23 +259,23 @@ final class MessagingRunner implements Runner, Runnable {
 			}
 		}
 	}
-	
+
 	@Override
 	public int getVersion() {
-		
+
 		return 1;
 	}
-	
+
 	@Override
 	public void run() {
-		
+
 		if (!this.started) {
 			return;
 		}
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				if (this.started) {
-					Act.later(null, this, 15000L);
+					Act.later(null, this, 15_000L);
 				}
 				return;
 			}
@@ -393,36 +393,36 @@ final class MessagingRunner implements Runner, Runnable {
 				}
 			} finally {
 				if (this.started) {
-					Act.later(null, this, 30000L);
+					Act.later(null, this, 30_000L);
 				}
 			}
 		} catch (final SQLException e) {
 			Report.exception("MMAN", "Looking for queue", e);
 		}
 	}
-	
+
 	@Override
 	public void start() {
-		
+
 		if (!this.started) {
 			synchronized (this) {
 				if (!this.started) {
-					Act.later(null, this, 10000L);
+					Act.later(null, this, 10_000L);
 					this.started = true;
 				}
 			}
 		}
 	}
-	
+
 	@Override
 	public void stop() {
-		
+
 		this.started = false;
 	}
-	
+
 	@Override
 	public String toString() {
-		
+
 		return "MRunner: parent=" + this.parent;
 	}
 }
