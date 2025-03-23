@@ -29,9 +29,9 @@ import ru.myx.ae3.xml.Xml;
  *
  *         Window - Preferences - Java - Code Style - Code Templates */
 final class MessagingManagerImpl implements MessagingManager {
-	
+
 	private static final BaseObject dataMaterialize(final int type, final TransferCopier data) throws Exception {
-		
+
 		switch (type) {
 			case 0 :
 				return BaseObject.UNDEFINED;
@@ -43,9 +43,9 @@ final class MessagingManagerImpl implements MessagingManager {
 				throw new RuntimeException("Unknown data type: " + type);
 		}
 	}
-
+	
 	private static final String join(final int[] keys) {
-		
+
 		if (keys == null || keys.length == 0) {
 			return "";
 		}
@@ -55,29 +55,29 @@ final class MessagingManagerImpl implements MessagingManager {
 		}
 		return result.toString();
 	}
-
+	
 	private final Plugin parent;
-
+	
 	MessagingManagerImpl(final Plugin parent) {
-		
+
 		this.parent = parent;
 	}
-
+	
 	@Override
 	public final MessageBlank createBlankMessage(final String messageFactoryId, final BaseObject messageFactoryParameters) {
-		
+
 		return new MessageBlankImpl(this, messageFactoryId, messageFactoryParameters);
 	}
-
+	
 	@Override
 	public final MessageBlank createBlankMessageText(final String subject, final String body) {
-		
+
 		return new MessageBlankText(this, subject, body);
 	}
-
+	
 	@Override
 	public final void deleteInbox(final int key) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -90,10 +90,10 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final void deleteInbox(final int[] keys) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -105,10 +105,10 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final void deleteSent(final int key) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -121,10 +121,10 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final void deleteSent(final int[] keys) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			try (final PreparedStatement ps = conn.prepareStatement("DELETE FROM m1Sent WHERE msgLuid IN (" + MessagingManagerImpl.join(keys) + ")")) {
 				ps.execute();
@@ -133,10 +133,10 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final Message[] getInbox() {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -178,10 +178,10 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final Message getInbox(final int key) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -212,10 +212,10 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final Message[] getSent() {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -250,10 +250,10 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final Message getSent(final int key) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			final PreparedStatement ps = conn.prepareStatement(
 					"SELECT s.msgLuid,s.msgId,m.msgDate,s.msgTarget,m.msgOwnerId,m.fcId FROM m1Sent s, m1Messages m WHERE s.msgId=m.msgId AND s.msgLuid=? AND s.msgUserId=? AND s.msgProcessed=?",
@@ -280,27 +280,27 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public final boolean hasInbox() {
-		
+
 		return true;
 	}
-
+	
 	@Override
 	public final boolean hasSent() {
-		
+
 		return true;
 	}
-
+	
 	@Override
 	public final String toString() {
-		
+
 		return "MManager: parent=" + this.parent;
 	}
-
+	
 	final void commitMessageBlank(final String factoryId, final BaseObject factoryParameters, final List<String> recipients, final boolean interactive) throws Exception {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -354,14 +354,7 @@ final class MessagingManagerImpl implements MessagingManager {
 					}
 				}
 				conn.commit();
-			} catch (final Error e) {
-				try {
-					conn.rollback();
-				} catch (final Throwable t) {
-					// ignore
-				}
-				throw e;
-			} catch (final Exception e) {
+			} catch (Error | Exception e) {
 				try {
 					conn.rollback();
 				} catch (final Throwable t) {
@@ -378,9 +371,9 @@ final class MessagingManagerImpl implements MessagingManager {
 			}
 		}
 	}
-
+	
 	final void delete(final String msgId) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			try (final PreparedStatement ps = conn.prepareStatement("DELETE FROM m1Queue WHERE msgId=?")) {
 				ps.setString(1, msgId);
@@ -402,9 +395,9 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	final BaseObject getMessageParameters(final String msgId) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			if (conn == null) {
 				throw new RuntimeException("DBMS is unavailable now!");
@@ -432,9 +425,9 @@ final class MessagingManagerImpl implements MessagingManager {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	final void inboxRead(final int msgLuid, final String msgId) {
-		
+
 		try (final Connection conn = this.parent.nextConnection()) {
 			try (final PreparedStatement ps = conn.prepareStatement("UPDATE m1Inbox SET msgRead=? WHERE msgLuid=? AND msgId=?")) {
 				ps.setString(1, "Y");
